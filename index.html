@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layer 7 Dstat</title>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <div id="container" style="width: 100%; height: 400px;"></div>
+
+    <script>
+        const socket = io();
+        const data = Array(10).fill(0);
+        const labels = Array(10).fill('-');
+
+        const chart = Highcharts.chart('container', {
+            chart: {
+                type: 'line'
+            },
+            title: {
+                text: 'Target: https://dstat.xyrootenzz.my.id/dstat'
+            },
+            xAxis: {
+                categories: labels,
+                title: {
+                    text: 'Time'
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'Requests per Second'
+                }
+            },
+            series: [{
+                name: 'Requests',
+                data: data
+            }]
+        });
+
+        socket.on('dstatUpdate', (update) => {
+            const localTime = new Date(update.timestamp).toLocaleTimeString();
+            data.shift();
+            labels.shift();
+            data.push(update.count);
+            labels.push(localTime);
+            chart.series[0].setData(data);
+            chart.xAxis[0].setCategories(labels);
+        });
+    </script>
+</body>
+</html>
